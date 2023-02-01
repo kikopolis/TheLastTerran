@@ -26,17 +26,17 @@ public class InputManager : MonoBehaviour {
     private InputAction crouchAction;
     private InputAction interactAction;
     private InputAction zoomAction;
-    public Vector2 move { get; private set; }
-    public Vector2 look { get; private set; }
-    public bool walk { get; private set; }
-    public bool sprint { get; private set; }
-    public bool dash { get; private set; }
-    public bool jump { get; private set; }
+    public Vector2 move { get; set; }
+    public Vector2 look { get; set; }
+    public bool walk { get; set; }
+    public bool sprint { get; set; }
+    public bool dash { get; set; }
+    public bool jump { get; set; }
+    public bool crouch { get; set; }
+    public bool interact { get; set; }
+    public bool zoom { get; set; }
 
     private void Awake() {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
         currentActionMap = playerInput.currentActionMap;
         moveAction = currentActionMap.FindAction("Move");
         lookAction = currentActionMap.FindAction("Look");
@@ -65,12 +65,6 @@ public class InputManager : MonoBehaviour {
         interactAction.canceled += OnInteract;
         zoomAction.canceled += OnZoom;
     }
-
-    public bool crouch { get; private set; }
-
-    public bool interact { get; private set; }
-
-    public bool zoom { get; private set; }
 
     private void OnEnable() {
         currentActionMap.Enable();

@@ -389,14 +389,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: -0, y: -0.25666878, z: -0, w: 0.96649945}
+  m_LocalPosition: {x: -0.014, y: 0.48, z: 0.598}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 359765851}
   m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -29.745, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -457,7 +457,6 @@ GameObject:
   - component: {fileID: 359765853}
   - component: {fileID: 359765852}
   - component: {fileID: 359765854}
-  - component: {fileID: 359765857}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -477,35 +476,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe11e05c70b12e043bb4ef49838f824c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraMovementEnabled: 1
   playerCamera: {fileID: 330585545}
   cameraRoot: {fileID: 1619023635}
+  lookDownLimit: -40
+  lookUpLimit: 70
+  mouseSensitivity: 30
+  lockCursor: 1
+  invertCamera: 0
+  timeToZoom: 0.15
+  zoomFOV: 20
+  defaultFov: 60
+  zoomEnabled: 1
+  moveEnabled: 1
+  walkEnabled: 1
+  dashEnabled: 1
+  runSpeed: 5
+  walkSpeed: 2
+  dashSpeed: 12
+  dashDistance: 5
+  currentSpeed: 0
+  currentVelocity: {x: 0, y: 0, z: 0}
+  sprintEnabled: 1
+  sprintSpeed: 9
+  sprintCooldown: 0.5
+  sprintFov: 80
+  sprintFovTime: 10
+  unlimitedSprint: 0
+  jumpEnabled: 1
+  jumpHeight: 3
+  allowJumpWhileSliding: 0
+  jumpCooldown: 0.25
+  crouchEnabled: 1
+  crouchSpeed: 1
+  crouchHeight: 0.5
+  vaultingToLedgesEnabled: 1
+  vaultHeight: 0.6
+  inputManager: {fileID: 359765849}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
   ledgeLayer:
     serializedVersion: 2
     m_Bits: 64
+  gravityEnabled: 1
   rb: {fileID: 359765852}
   mass: 54
   groundTolerance: 0.1
   gravity: -9.9
   airDrag: 0.8
-  standingHeight: 1
-  crouchHeight: 0.5
+  playerHeight: 1
   playerRadius: 0.5
-  acceleration: 9
+  acceleration: 10
   isGrounded: 0
-  gravityEnabled: 1
-  moveEnabled: 1
-  mouseLookEnabled: 1
-  walkEnabled: 1
-  sprintEnabled: 1
-  dashEnabled: 1
-  vaultingToLedgesEnabled: 1
-  jumpEnabled: 1
-  crouchEnabled: 1
   interactEnabled: 1
-  zoomEnabled: 1
   healthEnabled: 1
   staminaEnabled: 1
   manaEnabled: 1
@@ -515,25 +539,6 @@ MonoBehaviour:
   oxygenEnabled: 1
   radiationEnabled: 1
   inventoryEnabled: 1
-  inputManager: {fileID: 359765849}
-  runSpeed: 5
-  dashSpeed: 12
-  dashDistance: 5
-  walkSpeed: 2
-  sprintSpeed: 9
-  crouchSpeed: 1
-  jumpHeight: 3
-  currentSpeed: 0
-  currentVelocity: {x: 0, y: 0, z: 0}
-  vaultHeight: 0.6
-  allowJumpWhileSliding: 0
-  jumpCooldown: 0.25
-  lookDownLimit: -40
-  lookUpLimit: 70
-  mouseSensitivity: 30
-  timeToZoom: 0.15
-  zoomFOV: 20
-  defaultFov: 60
 --- !u!114 &359765849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -590,7 +595,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 359765845}
   m_LocalRotation: {x: -0, y: -0.24918991, z: -0, w: 0.96845466}
-  m_LocalPosition: {x: 2.59, y: 1.738, z: -8.18}
+  m_LocalPosition: {x: 10.75, y: 1.1, z: -16.87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -818,18 +823,6 @@ MonoBehaviour:
   healSound: []
   interactSound: []
   deathSound: []
---- !u!114 &359765857
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 359765845}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 693665343804ab1468a3efb6046b8431, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

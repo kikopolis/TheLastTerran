@@ -7,20 +7,161 @@ public class PlayerController : MonoBehaviour {
     /// </summary>
     private bool canAcceptInput = true;
 
-    [ Header("Camera") ]
+    # region Camera Movement Variables
+
+    [ SerializeField ]
+    private bool cameraMovementEnabled = true;
     [ SerializeField ]
     private Camera playerCamera;
-    [ Tooltip("This is where the camera will move to on each frame. Apply effects to this transform and not directly to the camera.") ]
     [ SerializeField ]
+    [ Tooltip("This is where the camera will move to on each frame. Apply effects to this transform and not directly to the camera.") ]
     private Transform cameraRoot;
+    [ SerializeField ]
+    private float lookDownLimit = -40f;
+    [ SerializeField ]
+    private float lookUpLimit = 70f;
+    [ SerializeField ]
+    private float mouseSensitivity = 30f;
+    [ SerializeField ]
+    private bool lockCursor = true;
+    [ SerializeField ]
+    private bool invertCamera;
+    // Internal variables
+    private float xRotation;
 
-    [ Header("Layers") ]
+    #region Camera Zoom Variables
+
+    [ SerializeField ]
+    private float timeToZoom = 0.15f;
+    [ SerializeField ]
+    private float zoomFOV = 20f;
+    [ SerializeField ]
+    private float defaultFov = 60f;
+    [ SerializeField ]
+    private bool zoomEnabled = true;
+    // Internal variables
+    private Coroutine zoomRoutine;
+
+    #endregion
+
+    #endregion
+
+    #region Movement Variables
+
+    [ SerializeField ]
+    private bool moveEnabled = true;
+    [ SerializeField ]
+    private bool walkEnabled = true;
+    [ SerializeField ]
+    private bool dashEnabled = true;
+    [ SerializeField ]
+    private float runSpeed = 5f;
+    [ SerializeField ]
+    private float walkSpeed = 2f;
+    [ SerializeField ]
+    private float dashSpeed = 12f;
+    [ SerializeField ]
+    private float dashDistance = 5f;
+    [ SerializeField ]
+    private float currentSpeed;
+    [ SerializeField ]
+    private Vector3 currentVelocity;
+    // Internal variables
+    private bool isDashing;
+    private bool isWalking;
+    private bool isSliding;
+
+    #endregion
+
+    #region Sprint Variables
+
+    [ SerializeField ]
+    private bool sprintEnabled = true;
+    [ SerializeField ]
+    private float sprintSpeed = 9f;
+    [ SerializeField ]
+    private float sprintCooldown = 0.5f;
+    [ SerializeField ]
+    private float sprintFov = 80f;
+    [ SerializeField ]
+    private float sprintFovTime = 10f;
+    [ SerializeField ]
+    private bool unlimitedSprint;
+    // Internal variables
+    private bool isSprinting;
+
+    #endregion
+
+    #region Jump Variables
+
+    [ SerializeField ]
+    private bool jumpEnabled = true;
+    [ SerializeField ]
+    private float jumpHeight = 3f;
+    [ SerializeField ]
+    private bool allowJumpWhileSliding = true;
+    [ SerializeField ]
+    private float jumpCooldown = 0.25f;
+    // Internal variables
+    private float timeSinceLastJump;
+    private float timeSinceLastLanding;
+    private bool jumpRequested;
+    private bool jumpConsumed;
+    private bool jumpedThisFrame;
+    private float timeSinceJumpRequested;
+    private bool isJumping;
+
+    #endregion
+
+    #region Crouching Variables
+
+    [ SerializeField ]
+    private bool crouchEnabled = true;
+    [ SerializeField ]
+    private float crouchSpeed = 1f;
+    [ SerializeField ]
+    private float crouchHeight = 0.5f;
+    // Internal variables
+    private float crouchTimer;
+    private float shouldBeCrouching;
+    private bool isCrouching;
+    private Coroutine dashRoutine;
+
+    #endregion
+
+    #region Vaulting Variables
+
+    [ SerializeField ]
+    private bool vaultingToLedgesEnabled = true;
+    [ SerializeField ]
+    private float vaultHeight = 0.6f;
+    // Internal variables
+    private bool isVaultingToLedge;
+    private Coroutine vaultToLedgeRoutine;
+
+    #endregion
+
+    #region Misc Variables
+
+    [ Tooltip("The InputManager class that handles all input processing.") ]
+    [ SerializeField ]
+    private InputManager inputManager;
+
+    #endregion
+
+    #region Layers
+
     [ SerializeField ]
     private LayerMask groundLayer;
     [ SerializeField ]
     private LayerMask ledgeLayer;
 
-    [ Header("Physics") ]
+    #endregion
+
+    #region Physics
+
+    [ SerializeField ]
+    private bool gravityEnabled = true;
     [ SerializeField ]
     private Rigidbody rb;
     [ SerializeField ]
@@ -32,42 +173,24 @@ public class PlayerController : MonoBehaviour {
     [ SerializeField ]
     private float airDrag = 0.8f;
     [ SerializeField ]
-    private float standingHeight = 1f;
-    [ SerializeField ]
-    private float crouchHeight = 0.5f;
+    private float playerHeight = 1f;
     [ SerializeField ]
     private float playerRadius = 0.5f;
     [ SerializeField ]
-    private float acceleration = 9f;
+    private float acceleration = 10f;
     [ SerializeField ]
     private bool isGrounded;
-    private float doubleGravity;
-    private float gravityTimesMass;
-    private float doubleGravityTimesMass;
+    // Internal variables
 
-    [ Header("Features") ]
-    [ SerializeField ]
-    private bool gravityEnabled = true;
-    [ SerializeField ]
-    private bool moveEnabled = true;
-    [ SerializeField ]
-    private bool mouseLookEnabled = true;
-    [ SerializeField ]
-    private bool walkEnabled = true;
-    [ SerializeField ]
-    private bool sprintEnabled = true;
-    [ SerializeField ]
-    private bool dashEnabled = true;
-    [ SerializeField ]
-    private bool vaultingToLedgesEnabled = true;
-    [ SerializeField ]
-    private bool jumpEnabled = true;
-    [ SerializeField ]
-    private bool crouchEnabled = true;
+    #endregion
+
+    #region Interaction Variables
+
     [ SerializeField ]
     private bool interactEnabled = true;
-    [ SerializeField ]
-    private bool zoomEnabled = true;
+
+    #endregion
+
     [ SerializeField ]
     private bool healthEnabled = true;
     [ SerializeField ]
@@ -87,170 +210,53 @@ public class PlayerController : MonoBehaviour {
     [ SerializeField ]
     private bool inventoryEnabled = true;
 
-    [ Header("Controls") ]
-    [ Tooltip("The InputManager class that handles all input processing.") ]
-    [ SerializeField ]
-    private InputManager inputManager;
-
-    [ Header("Movement") ]
-    [ SerializeField ]
-    private float runSpeed = 5f;
-    [ SerializeField ]
-    private float dashSpeed = 12f;
-    [ SerializeField ]
-    private float dashDistance = 3f;
-    [ SerializeField ]
-    private float walkSpeed = 2f;
-    [ SerializeField ]
-    private float sprintSpeed = 9f;
-    [ SerializeField ]
-    private float crouchSpeed = 1f;
-    [ SerializeField ]
-    private float jumpHeight = 3f;
-    [ SerializeField ]
-    private float currentSpeed;
-    [ SerializeField ]
-    private Vector3 currentVelocity;
-    [ SerializeField ]
-    private float vaultHeight = 0.6f;
-    private float crouchTimer;
-    private float shouldBeCrouching;
-    private bool isCrouching;
-    private bool isDashing;
-    private bool isJumping;
-    private bool isVaultingToLedge;
-    private bool isSliding;
-    private Coroutine dashRoutine;
-    private Coroutine vaultToLedgeRoutine;
-    [ SerializeField ]
-    private bool allowJumpWhileSliding = true;
-    [ SerializeField ]
-    private float jumpCooldown = 0.25f;
-    private float timeSinceLastJump;
-    private float timeSinceLastLanding;
-    private bool jumpRequested;
-    private bool jumpConsumed;
-    private bool jumpedThisFrame;
-    private float timeSinceJumpRequested;
-
-    [ Header("Mouse Look") ]
-    [ SerializeField ]
-    private float lookDownLimit = -40f;
-    [ SerializeField ]
-    private float lookUpLimit = 70f;
-    [ SerializeField ]
-    private float mouseSensitivity = 30f;
-    private float xRotation;
-
-    [ Header("Zoom and Aim") ]
-    [ SerializeField ]
-    private float timeToZoom = 0.15f;
-    [ SerializeField ]
-    private float zoomFOV = 20f;
-    [ SerializeField ]
-    private float defaultFov = 60f;
-    private Coroutine zoomRoutine;
-
+    public float getCurrentSpeed() {
+        return currentSpeed;
+    }
+    
     private void Awake() {
+        if (lockCursor) {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
         defaultFov = playerCamera.fieldOfView;
-        doubleGravity = gravity * 2;
-        gravityTimesMass = gravity * mass;
-        doubleGravityTimesMass = doubleGravity * mass;
     }
 
     private void FixedUpdate() {
         HandleInputs();
         CheckGround();
-        if (FeelsGravity()) {
-            HandleGravity();
-        }
-        // if (CanInteract()) {
-        //     HandleInteractionCheck();
-        //     HandleInteractionInput();
-        // }
+        HandleGravity();
+        HandleInteractionCheck();
+        HandleInteractionInput();
         // From here, only movement actions should be handled.
         if (!canAcceptInput) {
             return;
         }
-        if (CanMove()) {
-            HandleMovement();
-        }
-        if (CanJump()) {
-            HandleJump();
-        }
-        if (CanVaultToLedge()) {
-            HandleVaultToLedge();
-        }
-        // if (CanDash()) {
-        //     HandleDash();
-        // }
-        if (CanCrouch()) {
-            HandleCrouch();
-        }
-        // if (CanZoom()) {
-        //     HandleZoom();
-        // }
+        HandleMovement();
+        HandleJump();
+        HandleVaultToLedge();
+        HandleDash();
+        HandleCrouch();
+        HandleZoom();
         // Debug.Log(rb.velocity.y);
     }
 
     private void LateUpdate() {
-        if (CanMouseLook()) {
-            HandleMouseLook();
-        }
+        HandleMouseLook();
     }
 
     private void HandleInputs() {
-        if (inputManager.jump) {
-            timeSinceJumpRequested = 0f;
-            jumpRequested = true;
+        if (!inputManager.jump) {
+            return;
         }
-    }
-
-    private bool FeelsGravity() {
-        return gravityEnabled;
-    }
-
-    private bool CanMove() {
-        return moveEnabled;
-    }
-
-    private bool CanWalk() {
-        return walkEnabled;
-    }
-
-    private bool CanSprint() {
-        return sprintEnabled;
-    }
-
-    private bool CanDash() {
-        return dashEnabled && !isCrouching;
-    }
-
-    private bool CanVaultToLedge() {
-        return vaultingToLedgesEnabled && !isCrouching && !isDashing && !isJumping;
-    }
-
-    private bool CanJump() {
-        return jumpEnabled;
-    }
-
-    private bool CanCrouch() {
-        return crouchEnabled && !isDashing && !isJumping && !isVaultingToLedge;
-    }
-
-    private bool CanZoom() {
-        return zoomEnabled;
-    }
-
-    private bool CanInteract() {
-        return interactEnabled;
-    }
-
-    private bool CanMouseLook() {
-        return mouseLookEnabled;
+        timeSinceJumpRequested = 0f;
+        jumpRequested = true;
     }
 
     private void HandleGravity() {
+        if (!gravityEnabled) {
+            return;
+        }
         // apply gravity downwards and consider player mass as well
         var rbVelocity = rb.velocity;
         rbVelocity.y += gravity * Time.deltaTime;
@@ -314,6 +320,9 @@ public class PlayerController : MonoBehaviour {
      * Default WASD.
      */
     private void HandleMovement() {
+        if (!moveEnabled) {
+            return;
+        }
         switch (isGrounded) {
             case true when isDashing :
                 CalculateTargetSpeed();
@@ -391,25 +400,34 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void HandleJump() {
+        if (!jumpEnabled) {
+            return;
+        }
         // todo handle landing
         // todo handle landing with different grace for different speeds or fall distances
         if (isGrounded && inputManager.jump) {
-            AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -3f * doubleGravityTimesMass), ForceMode.Impulse);
+            AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -3f * gravity), ForceMode.Impulse);
         }
     }
 
     private void HandleDash() {
+        if (!dashEnabled && isCrouching) {
+            return;
+        }
         // todo
     }
 
     private void HandleVaultToLedge() {
+        if (!vaultingToLedgesEnabled || isCrouching || isDashing || isJumping) {
+            return;
+        }
         var camTransform = playerCamera.transform;
         if (!Physics.Raycast(camTransform.position, camTransform.forward, out var hit, 3f, ledgeLayer)) {
             return;
         }
         // Debug.Log("vault target in sights");
-        var rayOrigin = hit.point + (camTransform.forward * playerRadius) + (Vector3.up * vaultHeight * standingHeight);
-        if (!Physics.Raycast(rayOrigin, Vector3.down, out var landPoint, standingHeight)) {
+        var rayOrigin = hit.point + (camTransform.forward * playerRadius) + (Vector3.up * vaultHeight * playerHeight);
+        if (!Physics.Raycast(rayOrigin, Vector3.down, out var landPoint, playerHeight)) {
             return;
         }
         // Debug.Log("vault landing point found");
@@ -443,6 +461,9 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void HandleCrouch() {
+        if (!crouchEnabled || isDashing || isJumping || isVaultingToLedge) {
+            return;
+        }
         crouchTimer += Time.deltaTime;
         var percentComplete = crouchTimer / 1f;
         percentComplete *= percentComplete;
@@ -455,7 +476,7 @@ public class PlayerController : MonoBehaviour {
             // prevent standing up if there is an object above the player
             if (CanStandUp()) {
                 transform.localScale = new Vector3(transform.localScale.x,
-                                                   Mathf.Lerp(transform.localScale.y, standingHeight, percentComplete),
+                                                   Mathf.Lerp(transform.localScale.y, playerHeight, percentComplete),
                                                    transform.localScale.z);
             }
         }
@@ -473,21 +494,24 @@ public class PlayerController : MonoBehaviour {
     }
 
     private bool IsStandingUp() {
-        return Mathf.Approximately(transform.localScale.y, standingHeight);
+        return Mathf.Approximately(transform.localScale.y, playerHeight);
     }
 
     private void HandleZoom() {
-        if (inputManager.zoom) {
-            if (zoomRoutine != null) {
-                StopCoroutine(zoomRoutine);
-            }
-            zoomRoutine = StartCoroutine(ZoomRoutine());
-        } else {
-            if (zoomRoutine != null) {
-                StopCoroutine(zoomRoutine);
-            }
-            zoomRoutine = StartCoroutine(UnZoomRoutine());
+        if (!zoomEnabled) {
+            return;
         }
+        // if (inputManager.zoom) {
+        //     if (zoomRoutine != null) {
+        //         StopCoroutine(zoomRoutine);
+        //     }
+        //     zoomRoutine = StartCoroutine(ZoomRoutine());
+        // } else {
+        //     if (zoomRoutine != null) {
+        //         StopCoroutine(zoomRoutine);
+        //     }
+        //     zoomRoutine = StartCoroutine(UnZoomRoutine());
+        // }
     }
 
     private IEnumerator ZoomRoutine() {
@@ -513,6 +537,10 @@ public class PlayerController : MonoBehaviour {
     private void HandleInteractionInput() { }
 
     private void HandleMouseLook() {
+        if (cameraMovementEnabled == false) {
+            return;
+        }
+
         var mouseX = inputManager.look.x;
         var mouseY = inputManager.look.y;
         playerCamera.transform.position = cameraRoot.position;
