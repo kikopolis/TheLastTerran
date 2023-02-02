@@ -353,9 +353,10 @@ public class PlayerController : MonoBehaviour {
             ts = sprintSpeed;
         } else if (inputManager.walk) {
             ts = walkSpeed;
-        } else if (inputManager.dash) {
-            ts = dashSpeed;
         }
+        // else if (inputManager.dash) {
+        //     ts = dashSpeed;
+        // }
         // if cannot stand up yet but crouch has been canceled, set back to crouch speed
         if (!IsStandingUp() && !inputManager.crouch) {
             ts = crouchSpeed;
@@ -381,26 +382,6 @@ public class PlayerController : MonoBehaviour {
         return velocityChange;
     }
 
-    private void Dash() {
-        if (dashRoutine != null) {
-            StopCoroutine(dashRoutine);
-        }
-        dashRoutine = StartCoroutine(DashRoutine());
-    }
-
-    private IEnumerator DashRoutine() {
-        // Disable input during dash
-        DisableInput();
-        var dashDirection = transform.forward;
-        var dashDistRemaining = 0f;
-        while (dashDistRemaining < dashDistance) {
-            AddForce(dashDirection * dashSpeed, ForceMode.Acceleration);
-            dashDistRemaining += dashSpeed * Time.deltaTime;
-            yield return null;
-        }
-        EnableInput();
-    }
-
     private void HandleJump() {
         if (!jumpEnabled) {
             return;
@@ -414,10 +395,29 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void HandleDash() {
-        if (!dashEnabled && isCrouching) {
+        if (!dashEnabled || isCrouching || isDashing || isJumping || inputManager.dash.magnitude.Equals(0f)) {
             return;
         }
-        // todo
+        if (dashRoutine != null) {
+            StopCoroutine(dashRoutine);
+        }
+        dashRoutine = StartCoroutine(DashRoutine());
+    }
+
+    private IEnumerator DashRoutine() {
+        isDashing = true;
+        // Disable input during dash
+        DisableInput();
+        var dashDirection = transform.forward;
+        var dashDistRemaining = 0f;
+        while (dashDistRemaining < dashDistance) {
+            AddForce(dashDirection * dashSpeed, ForceMode.Acceleration);
+            dashDistRemaining += dashSpeed * Time.deltaTime;
+            yield return null;
+        }
+        EnableInput();
+        yield return null;
+        isDashing = false;
     }
 
     private void HandleVaultToLedge() {

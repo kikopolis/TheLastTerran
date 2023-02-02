@@ -309,6 +309,8 @@ namespace TestPlayMode {
             Assert.True(Mathf.Approximately(newPosition.z, oldPosition.z));
             Assert.Less(newPosition.y, oldPosition.y);
         }
+        
+        
 
         [ UnityTest ]
         public IEnumerator player_can_jump() {

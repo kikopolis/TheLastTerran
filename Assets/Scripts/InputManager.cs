@@ -2,6 +2,8 @@
 using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour {
+    private const float MAX_TIME_BETWEEN_DASH_BUTTON_PRESSES = 0.2f;
+
     [ Header("Player Input") ]
     [ Tooltip("The PlayerInput Unity Component that contains all the input action maps for the player.") ]
     [ SerializeField ]
@@ -26,11 +28,15 @@ public class InputManager : MonoBehaviour {
     private InputAction crouchAction;
     private InputAction interactAction;
     private InputAction zoomAction;
+    private float sinceDashPress;
     public Vector2 move { get; set; }
+    public Vector2 dash { get; set; }
+    private Vector2 previousMoveDirection;
+    private int pressCountForDash;
+    private bool dashConsumed;
     public Vector2 look { get; set; }
     public bool walk { get; set; }
     public bool sprint { get; set; }
-    public bool dash { get; set; }
     public bool jump { get; set; }
     public bool crouch { get; set; }
     public bool interact { get; set; }
@@ -75,8 +81,40 @@ public class InputManager : MonoBehaviour {
     }
 
     private void OnMove(InputAction.CallbackContext ctx) {
-        // set dash to true when the player presses the corresponding direction twice in quick succession
-        move = ctx.ReadValue<Vector2>();
+        var mDir = ctx.ReadValue<Vector2>();
+        if (mDir.magnitude > 0f) {
+            // if previous move direction is different, reset dash counters
+            if (mDir != previousMoveDirection) {
+                Debug.Log("reset dash counters, move dir is different");
+                previousMoveDirection = mDir;
+                pressCountForDash = 0;
+                sinceDashPress = 0f;
+                dashConsumed = false;
+            }
+            // if move direction is the same as previous and within time limit, increment dash counter
+            if (mDir == previousMoveDirection && sinceDashPress < MAX_TIME_BETWEEN_DASH_BUTTON_PRESSES) {
+                Debug.Log("increment dash counter, move dir is the same");
+                pressCountForDash++;
+                sinceDashPress = Time.time;
+            }
+            // if move direction is the same as previous and outside time limit, reset dash counter
+            if (mDir == previousMoveDirection && sinceDashPress > MAX_TIME_BETWEEN_DASH_BUTTON_PRESSES) {
+                Debug.Log("reset dash counter, move dir is the same but outside time limit");
+                previousMoveDirection = mDir;
+                pressCountForDash = 0;
+                sinceDashPress = 0f;
+            }
+            // if dash counter is 2 and within timer, set dash direction
+            if (pressCountForDash == 2 && !dashConsumed && sinceDashPress < MAX_TIME_BETWEEN_DASH_BUTTON_PRESSES) {
+                Debug.Log("set dash direction");
+                dash = mDir;
+                dashConsumed = true;
+                previousMoveDirection = Vector2.zero;
+                sinceDashPress = 0f;
+            }
+        }
+
+        move = mDir;
     }
 
     private void OnLook(InputAction.CallbackContext ctx) {
