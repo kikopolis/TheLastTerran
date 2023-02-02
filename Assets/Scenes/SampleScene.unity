@@ -504,7 +504,7 @@ MonoBehaviour:
   sprintFovTime: 10
   unlimitedSprint: 0
   jumpEnabled: 1
-  jumpHeight: 3
+  jumpHeight: 15
   allowJumpWhileSliding: 0
   jumpCooldown: 0.25
   crouchEnabled: 1

@@ -213,7 +213,7 @@ public class PlayerController : MonoBehaviour {
     public float getCurrentSpeed() {
         return currentSpeed;
     }
-    
+
     private void Awake() {
         if (lockCursor) {
             Cursor.lockState = CursorLockMode.Locked;
@@ -257,9 +257,10 @@ public class PlayerController : MonoBehaviour {
         if (!gravityEnabled) {
             return;
         }
-        // apply gravity downwards and consider player mass as well
+        // apply gravity downwards
         var rbVelocity = rb.velocity;
         rbVelocity.y += gravity * Time.deltaTime;
+        // if grounded, apply a small negative velocity
         if (isGrounded && rb.velocity.y < 0) {
             rbVelocity.y = -2f;
         }
@@ -306,6 +307,7 @@ public class PlayerController : MonoBehaviour {
             if (hit5.collider != null) {
                 groundPoint = hit5.point;
             }
+            // Clip the player to the ground if they are close enough
             var groundPosition = new Vector3(transform.position.x,
                                              groundPoint.y + transform.localScale.y,
                                              transform.position.z);
@@ -403,10 +405,11 @@ public class PlayerController : MonoBehaviour {
         if (!jumpEnabled) {
             return;
         }
+
         // todo handle landing
         // todo handle landing with different grace for different speeds or fall distances
         if (isGrounded && inputManager.jump) {
-            AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -3f * gravity), ForceMode.Impulse);
+            AddForce(Vector3.up * Mathf.Sqrt(jumpHeight * -3f * ((gravity * mass) * 2)), ForceMode.Impulse);
         }
     }
 
